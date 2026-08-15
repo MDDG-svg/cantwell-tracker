@@ -417,7 +417,7 @@ function renderBills() {
       <div class="tags">
         ${b.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}
         ${cosponsors ? `<span class="tag">${esc(cosponsors)}</span>` : ''}
-        <span class="conf official">${live.fetched_ok === false ? 'Cached' : 'Live · congress.gov'}</span>
+        <span class="conf official">${live.fetched_ok === false ? 'Cached' : `Live · ${esc(live.source || 'congress.gov')}`}</span>
       </div>
       <div class="progress-track">${progressSteps}</div>
       <div class="progress-labels"><span>Introduced</span><span>Committee</span><span>Floor</span><span>Signed</span></div>

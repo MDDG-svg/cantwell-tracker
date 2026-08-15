@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T03:14:40.338Z",
+  "generated_at": "2026-08-15T03:20:51.750Z",
   "bills": {
     "S1748": {
       "latest_action_text": "Committee on Commerce, Science, and Transportation. Ordered to be reported with an amendment in the nature of a substitute favorably.",
@@ -7,6 +7,7 @@
       "cosponsors_count": 76,
       "introduced_date": "2025-05-14",
       "updated_date": "2026-08-06T11:03:33Z",
+      "source": "congress.gov",
       "fetched_ok": true
     },
     "S4668": {
@@ -15,6 +16,7 @@
       "cosponsors_count": 7,
       "introduced_date": "2026-06-02",
       "updated_date": "2026-08-10T17:21:28Z",
+      "source": "congress.gov",
       "fetched_ok": true
     },
     "S1514": {
@@ -23,6 +25,7 @@
       "cosponsors_count": 1,
       "introduced_date": "2025-04-29",
       "updated_date": "2026-08-06T11:03:33Z",
+      "source": "congress.gov",
       "fetched_ok": true
     },
     "S4802": {
@@ -31,6 +34,7 @@
       "cosponsors_count": 5,
       "introduced_date": "2026-06-17",
       "updated_date": "2026-07-23T11:03:19Z",
+      "source": "congress.gov",
       "fetched_ok": true
     },
     "S5332": {
@@ -39,15 +43,16 @@
       "cosponsors_count": 3,
       "introduced_date": "2026-08-06",
       "updated_date": "2026-08-12T06:03:36Z",
+      "source": "congress.gov",
       "fetched_ok": true
     }
   },
   "news": [
     {
-      "title": "Cantwell joins secretary of the interior in meeting for Spokane fires - spokesman.com",
+      "title": "Cantwell joins secretary of the interior in meeting for Spokane fires - The Spokesman-Review",
       "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxNckJMOEpIRnc5UWctRWZLcTBLV1k4YU1QRHFONmM1V041dVdPTnhjb3FGbjVZN1BUM0dqOEk2M0FCcDI2WmFGc1hSaGJlYzhMRE8tVEkzUGluYXBqSmdkbzFqSnRJbUh2NlBBTjhGWXRQVU12aURkQi1xXzlDZHV2SjQycVBtcmt2RTRSZ1B5WFNzMVdqRVd0OWRvNkZtdw?oc=5",
       "pubDate": "Thu, 13 Aug 2026 03:02:50 GMT",
-      "source": "spokesman.com"
+      "source": "The Spokesman-Review"
     },
     {
       "title": "Secretary of the Interior Doug Burgum joins Senator Maria Cantwell for briefing on Spokane fires - NonStop Local KHQ",
@@ -56,10 +61,10 @@
       "source": "NonStop Local KHQ"
     },
     {
-      "title": "User Clip: Senator Maria Cantwell - c-span.org",
+      "title": "User Clip: Senator Maria Cantwell - C-SPAN",
       "link": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQYzAxd0xaMnZ5amR4VWttakNDUGFqN0t2WDUwOHNtQVBuRDJOLU5EYlRSWC0xMGZKWkZ4dVUyZEZpTWlER3M2NnRCMmVkOEFHUXJoU0lEeEJyTklwZUFiTkxVeXVVX2pKTkdnaVdyQzZIX1g4X3ZxMVpiaG9zazVRR3RVS1Y?oc=5",
       "pubDate": "Mon, 10 Aug 2026 01:27:09 GMT",
-      "source": "c-span.org"
+      "source": "C-SPAN"
     },
     {
       "title": "New Bill: Senator Maria Cantwell introduces S. 5332: Cooperative Institute Act of 2026 - Quiver Quantitative",
@@ -175,11 +180,5 @@
       }
     ]
   },
-  "errors": [
-    "bills.S1748: API error 403 (kept previous)",
-    "bills.S4668: API error 403 (kept previous)",
-    "bills.S1514: API error 403 (kept previous)",
-    "bills.S4802: API error 403 (kept previous)",
-    "bills.S5332: API error 403 (kept previous)"
-  ]
+  "errors": []
 }

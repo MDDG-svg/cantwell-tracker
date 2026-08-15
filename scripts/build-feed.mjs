@@ -32,14 +32,21 @@ async function main() {
   ]);
 
   // Fall back to previous values for anything that failed this run, so a
-  // transient upstream outage doesn't blank out the dashboard.
+  // transient upstream outage doesn't blank out the dashboard. Merged per
+  // field (not whole-object) because the govtrack fallback in fetch-bills.mjs
+  // can succeed on action/date fields while leaving cosponsors_count null.
   const finalBills = { ...(previous?.bills ?? {}) };
   for (const [id, val] of Object.entries(bills)) {
-    if (val.fetched_ok === false && previous?.bills?.[id]?.fetched_ok) {
-      errors.push(`bills.${id}: ${val.error} (kept previous)`);
+    const prev = previous?.bills?.[id];
+    if (val.fetched_ok === false) {
+      if (prev?.fetched_ok) errors.push(`bills.${id}: ${val.error} (kept previous)`);
       continue;
     }
-    finalBills[id] = val;
+    finalBills[id] = {
+      ...val,
+      cosponsors_count: val.cosponsors_count ?? prev?.cosponsors_count ?? null,
+      updated_date: val.updated_date ?? prev?.updated_date ?? null
+    };
   }
 
   const finalNews = generalNews.fetched_ok ? generalNews.items : (previous?.news ?? []);
