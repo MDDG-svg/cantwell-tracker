@@ -1,6 +1,6 @@
-export async function fetchWaAlerts() {
+export async function fetchStateAlerts(stateCode) {
   try {
-    const res = await fetch("https://api.weather.gov/alerts/active?area=WA", {
+    const res = await fetch(`https://api.weather.gov/alerts/active?area=${stateCode}`, {
       headers: { "User-Agent": "cantwell-tracker (personal dashboard, github.com)" }
     });
     if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -20,7 +20,7 @@ export async function fetchWaAlerts() {
       fetched_ok: true
     };
   } catch (err) {
-    console.warn(`[fetch-wa-alerts] failed: ${err.message}`);
+    console.warn(`[fetch-state-alerts] failed for ${stateCode}: ${err.message}`);
     return { fetched_ok: false, error: err.message };
   }
 }

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-feed.mjs"
+    "build": "node scripts/build-senate-feed.mjs"
   },
   "dependencies": {
     "rss-parser": "^3.13.0"
