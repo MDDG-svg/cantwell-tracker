@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T02:52:57.432Z",
+  "generated_at": "2026-08-15T03:14:40.338Z",
   "bills": {
     "S1748": {
       "latest_action_text": "Committee on Commerce, Science, and Transportation. Ordered to be reported with an amendment in the nature of a substitute favorably.",
@@ -44,10 +44,10 @@
   },
   "news": [
     {
-      "title": "Cantwell joins secretary of the interior in meeting for Spokane fires - The Spokesman-Review",
+      "title": "Cantwell joins secretary of the interior in meeting for Spokane fires - spokesman.com",
       "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxNckJMOEpIRnc5UWctRWZLcTBLV1k4YU1QRHFONmM1V041dVdPTnhjb3FGbjVZN1BUM0dqOEk2M0FCcDI2WmFGc1hSaGJlYzhMRE8tVEkzUGluYXBqSmdkbzFqSnRJbUh2NlBBTjhGWXRQVU12aURkQi1xXzlDZHV2SjQycVBtcmt2RTRSZ1B5WFNzMVdqRVd0OWRvNkZtdw?oc=5",
       "pubDate": "Thu, 13 Aug 2026 03:02:50 GMT",
-      "source": "The Spokesman-Review"
+      "source": "spokesman.com"
     },
     {
       "title": "Secretary of the Interior Doug Burgum joins Senator Maria Cantwell for briefing on Spokane fires - NonStop Local KHQ",
@@ -56,10 +56,10 @@
       "source": "NonStop Local KHQ"
     },
     {
-      "title": "User Clip: Senator Maria Cantwell - C-SPAN",
+      "title": "User Clip: Senator Maria Cantwell - c-span.org",
       "link": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQYzAxd0xaMnZ5amR4VWttakNDUGFqN0t2WDUwOHNtQVBuRDJOLU5EYlRSWC0xMGZKWkZ4dVUyZEZpTWlER3M2NnRCMmVkOEFHUXJoU0lEeEJyTklwZUFiTkxVeXVVX2pKTkdnaVdyQzZIX1g4X3ZxMVpiaG9zazVRR3RVS1Y?oc=5",
       "pubDate": "Mon, 10 Aug 2026 01:27:09 GMT",
-      "source": "C-SPAN"
+      "source": "c-span.org"
     },
     {
       "title": "New Bill: Senator Maria Cantwell introduces S. 5332: Cooperative Institute Act of 2026 - Quiver Quantitative",
@@ -93,7 +93,7 @@
     }
   ],
   "wa": {
-    "active_alerts_count": 13,
+    "active_alerts_count": 12,
     "top_alerts": [
       {
         "event": "Red Flag Warning",
@@ -120,28 +120,28 @@
         "expires": "2026-08-14T21:00:00-07:00"
       },
       {
-        "event": "Flash Flood Warning",
-        "headline": "Flash Flood Warning issued August 14 at 6:08PM PDT until August 14 at 8:00PM PDT by NWS Spokane WA",
-        "areaDesc": "Chelan, WA",
-        "severity": "Severe",
-        "effective": "2026-08-14T18:08:00-07:00",
-        "expires": "2026-08-14T20:00:00-07:00"
-      },
-      {
         "event": "Red Flag Warning",
         "headline": "Red Flag Warning issued August 14 at 1:24PM PDT until August 14 at 9:00PM PDT by NWS Seattle WA",
         "areaDesc": "West Portion of the Olympic Mountains; West Slopes of the North Cascades Generally above 1500 Feet; West Slopes of the Central Cascades Generally above 1500 Feet; East Portion of the Olympic Mountains",
         "severity": "Severe",
         "effective": "2026-08-14T13:24:00-07:00",
         "expires": "2026-08-14T21:00:00-07:00"
+      },
+      {
+        "event": "Air Quality Alert",
+        "headline": "Air Quality Alert issued August 14 at 11:47AM PDT by NWS Pendleton OR",
+        "areaDesc": "Yakima, WA",
+        "severity": "Unknown",
+        "effective": "2026-08-14T11:47:00-07:00",
+        "expires": "2026-08-15T12:00:00-07:00"
       }
     ],
     "disaster_news": [
       {
-        "title": "Washington state offers expanded assistance for wildfire victims - washingtonstatestandard.com",
+        "title": "Washington state offers expanded assistance for wildfire victims - Washington State Standard",
         "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPWGVROWJYZnBUdU42NVdlOEkxcGVHYy1IVjFDMFROV2JxeUk4VnNNdkxGaVNVeWhRZ2Y5aWRRODk3NU82aFNCUlFLT2c1S3QxOV8ybHZHXzVfTlNBc3VVQlprTWVOMnM0VGRuZGV3Z3lFODJZQW1wQ1hIQ2tQWnhJanJQRVFoQTZfdHBLc1U4bjg2M0hJYzI3ZWN5RWxsUHgtWWhqZXF4RQ?oc=5",
         "pubDate": "Tue, 11 Aug 2026 00:39:46 GMT",
-        "source": "washingtonstatestandard.com"
+        "source": "Washington State Standard"
       },
       {
         "title": "Readying Our Response to Washington Wildfires - Samaritan's Purse",
@@ -175,5 +175,11 @@
       }
     ]
   },
-  "errors": []
+  "errors": [
+    "bills.S1748: API error 403 (kept previous)",
+    "bills.S4668: API error 403 (kept previous)",
+    "bills.S1514: API error 403 (kept previous)",
+    "bills.S4802: API error 403 (kept previous)",
+    "bills.S5332: API error 403 (kept previous)"
+  ]
 }
