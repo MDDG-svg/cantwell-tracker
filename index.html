@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cantwell Tracker — Hill Activity Monitor</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #0f1115;
+    color: #e6e8eb;
+    padding: 24px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.08em; color: #8b93a1; text-transform: uppercase; }
+  h1 { margin: 2px 0 0; font-size: 24px; color: #fff; }
+  .sync { text-align: right; }
+  .sync span { display: block; }
+  .sync .label { font-size: 11px; color: #8b93a1; }
+  .sync .value { font-size: 13px; font-weight: 600; color: #e6e8eb; }
+
+  .toolbar {
+    display: flex; gap: 10px; margin: 16px 0; flex-wrap: wrap; align-items: center;
+  }
+  .search {
+    flex: 1; min-width: 200px; background: #171a21; border: 1px solid #262b36;
+    border-radius: 8px; padding: 9px 12px; color: #e6e8eb; font-size: 13px;
+  }
+  .search:focus { outline: none; border-color: #6ea8fe; }
+  .toggle-group { display: flex; background: #171a21; border: 1px solid #262b36; border-radius: 8px; overflow: hidden; }
+  .toggle-btn {
+    background: none; border: none; color: #8b93a1; font-size: 12px; padding: 9px 14px;
+    cursor: pointer; font-weight: 600;
+  }
+  .toggle-btn.active { background: #1e2531; color: #6ea8fe; }
+  .print-btn {
+    background: #171a21; border: 1px solid #262b36; border-radius: 8px; color: #cfd4dc;
+    font-size: 12px; padding: 9px 14px; cursor: pointer; font-weight: 600;
+  }
+  .print-btn:hover { border-color: #465066; }
+
+  .countdown {
+    background: #171a21; border: 1px solid #262b36; border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .countdown .label { font-size: 12px; color: #8b93a1; }
+  .countdown .value { font-size: 15px; font-weight: 700; color: #6ea8fe; }
+
+  @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .ticker-wrap { border-radius: 8px; overflow: hidden; padding: 9px 0; margin-bottom: 10px; white-space: nowrap; }
+  .ticker-wrap.leg { background: #171a21; border: 1px solid #262b36; }
+  .ticker-wrap.news { background: #2a1414; }
+  .ticker-track { display: inline-flex; white-space: nowrap; animation: scroll-left 32s linear infinite; }
+  .ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+  .ticker-item { padding: 0 24px; font-size: 12px; font-family: "SF Mono", Menlo, monospace; }
+  .leg .ticker-item { color: #cfd4dc; }
+  .news .ticker-item { color: #ff8f8f; font-weight: 600; }
+  .bill-code {
+    color: #6ea8fe; font-weight: 700; cursor: pointer; text-decoration: underline;
+    text-decoration-color: transparent; transition: text-decoration-color .15s;
+  }
+  .bill-code:hover { text-decoration-color: #6ea8fe; }
+  .up { color: #3ddc84; } .mid { color: #f2b705; } .new { color: #6ea8fe; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin: 18px 0 22px; }
+  .stat { background: #171a21; border: 1px solid #262b36; border-radius: 10px; padding: 14px; }
+  .stat.alert { background: #2a1414; border-color: #4a1f1f; }
+  .stat .k { font-size: 11px; color: #8b93a1; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 6px; }
+  .stat .v { font-size: 20px; font-weight: 700; margin: 0; color: #fff; }
+  .stat.alert .k, .stat.alert .v { color: #ff8f8f; }
+
+  h2 { font-size: 15px; margin: 24px 0 10px; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .needs-research {
+    font-size: 10px; background: #2a2410; color: #f2b705; padding: 2px 8px; border-radius: 5px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em;
+  }
+  .placeholder-card {
+    background: #14161b; border: 1px dashed #333a48; border-radius: 12px; padding: 16px;
+    font-size: 13px; color: #6b7280; margin-bottom: 22px;
+  }
+
+  .card {
+    background: #171a21; border: 1px solid #262b36; border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px; transition: border-color .15s, transform .1s; position: relative;
+  }
+  .card:hover { border-color: #465066; }
+  .card p { margin: 0; font-size: 13.5px; color: #cfd4dc; }
+  .card .meta { margin-top: 4px; font-size: 11px; color: #8b93a1; }
+  .card a.meta-link { color: #8b93a1; text-decoration: none; }
+  .card a.meta-link:hover { color: #6ea8fe; }
+  .card.bipartisan { border-color: #6ea8fe; }
+  .card .toprow { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+  .card .title { font-weight: 700; font-size: 14.5px; color: #fff; margin: 0; cursor: pointer; }
+  .card .title:hover { text-decoration: underline; }
+  .badge { font-size: 11px; padding: 3px 10px; border-radius: 6px; font-weight: 600; white-space: nowrap; }
+  .badge.bip { background: #16253d; color: #6ea8fe; }
+  .badge.pass { background: #123222; color: #3ddc84; }
+  .badge.wait { background: #3a2f10; color: #f2b705; }
+  .card .desc { margin-top: 8px; font-size: 13px; color: #cfd4dc; }
+
+  .tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .tag { font-size: 10.5px; background: #1e222c; color: #8b93a1; padding: 2px 8px; border-radius: 5px; }
+  .conf { font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: 700; text-transform: uppercase; }
+  .conf.official { background: #123222; color: #3ddc84; }
+  .conf.news { background: #16253d; color: #6ea8fe; }
+
+  .progress-track { display: flex; align-items: center; margin-top: 10px; gap: 4px; }
+  .progress-step { flex: 1; height: 5px; border-radius: 3px; background: #262b36; }
+  .progress-step.done { background: #3ddc84; }
+  .progress-step.current { background: #f2b705; }
+  .progress-labels { display: flex; justify-content: space-between; margin-top: 4px; font-size: 9.5px; color: #565d6b; text-transform: uppercase; letter-spacing: 0.03em; }
+  .stale-flag { display: inline-block; margin-top: 6px; font-size: 11px; color: #f2b705; }
+
+  .pin-btn {
+    position: absolute; top: 14px; right: 16px; background: none; border: none; cursor: pointer;
+    font-size: 16px; color: #3a4152; padding: 2px;
+  }
+  .pin-btn.pinned { color: #f2b705; }
+  .notes-toggle { margin-top: 10px; font-size: 11px; color: #6ea8fe; cursor: pointer; background:none; border:none; padding:0; }
+  .notes-area {
+    display: none; width: 100%; margin-top: 8px; background: #0f1115; border: 1px solid #262b36;
+    border-radius: 8px; color: #cfd4dc; font-size: 12px; padding: 8px; resize: vertical; min-height: 50px;
+    font-family: inherit;
+  }
+  .notes-area.open { display: block; }
+
+  .pinned-section { margin-bottom: 24px; }
+  .empty-pins { font-size: 12px; color: #565d6b; font-style: italic; }
+
+  .wa-card { background: #2a1414; border-radius: 12px; padding: 14px 16px; margin-bottom: 22px; }
+  .wa-card .title { margin: 0 0 4px; font-weight: 700; font-size: 14.5px; color: #ff8f8f; }
+  .wa-card p.body { margin: 0; font-size: 13px; color: #e6c9c9; }
+  .wa-card .alert-list { margin: 8px 0 0; padding-left: 18px; font-size: 12px; color: #e6c9c9; line-height: 1.7; }
+
+  ul.watch { margin: 0; padding-left: 18px; font-size: 13px; color: #cfd4dc; line-height: 1.9; }
+  footer { margin-top: 28px; font-size: 11px; color: #565d6b; text-align: center; }
+  .fetch-error { font-size: 12px; color: #ff8f8f; background: #2a1414; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .overlay.open { display: flex; }
+  .modal { background: #171a21; border: 1px solid #262b36; border-radius: 14px; max-width: 520px; width: 100%; padding: 24px; position: relative; max-height: 85vh; overflow-y: auto; }
+  .modal .close { position: absolute; top: 14px; right: 16px; cursor: pointer; color: #8b93a1; font-size: 20px; background: none; border: none; }
+  .modal .close:hover { color: #fff; }
+  .modal h3 { margin: 0 0 4px; font-size: 18px; color: #fff; }
+  .modal .subtitle { font-size: 13px; color: #8b93a1; margin-bottom: 14px; }
+  .modal .row { margin-bottom: 10px; font-size: 13px; }
+  .modal .row .label { color: #8b93a1; display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 2px; }
+  .modal .row .val { color: #e6e8eb; }
+  .modal .link { display: inline-block; margin-top: 14px; font-size: 13px; color: #6ea8fe; text-decoration: none; border: 1px solid #2d3646; padding: 8px 14px; border-radius: 8px; }
+  .modal .link:hover { background: #1e2531; }
+
+  @media print {
+    body { background: #fff; color: #000; }
+    .ticker-wrap, .toolbar, .countdown, .pin-btn, .notes-toggle, .print-btn { display: none !important; }
+    .card, .stat, .wa-card { border: 1px solid #ccc !important; background: #fff !important; }
+    .card .title, h1, h2 { color: #000 !important; }
+    .card p, .card .desc { color: #333 !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <p class="eyebrow">Hill Activity Monitor</p>
+      <h1>Cantwell Tracker</h1>
+    </div>
+    <div class="sync">
+      <span class="label">Last sync</span>
+      <span class="value" id="syncValue">Loading…</span>
+    </div>
+  </div>
+
+  <div class="countdown">
+    <span class="label">⏱ Senate returns from recess in</span>
+    <span class="value" id="recessCountdown">—</span>
+  </div>
+
+  <div class="toolbar">
+    <input class="search" id="searchBox" type="text" placeholder="Search bills, topics, bill numbers…">
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-view="week">This week</button>
+      <button class="toggle-btn" data-view="session">Full session</button>
+    </div>
+    <button class="print-btn" onclick="window.print()">🖨 Print / Share</button>
+  </div>
+
+  <div id="errorBanner"></div>
+
+  <div class="ticker-wrap leg">
+    <div class="ticker-track" id="legTickerTrack"></div>
+  </div>
+
+  <div class="ticker-wrap news">
+    <div class="ticker-track" id="newsTickerTrack"></div>
+  </div>
+
+  <div class="stats" id="statsRow">
+    <div class="stat"><p class="k">Bills in motion</p><p class="v" id="statBillCount">—</p></div>
+    <div class="stat"><p class="k">Newest bill</p><p class="v" id="statNewestBill">—</p></div>
+    <div class="stat alert"><p class="k">WA disaster status</p><p class="v" id="statWaStatus">—</p></div>
+    <div class="stat"><p class="k">Senate status</p><p class="v" id="statSenateStatus">—</p></div>
+  </div>
+
+  <div class="pinned-section" id="pinnedSection">
+    <h2>📌 Pinned</h2>
+    <div id="pinnedList"><p class="empty-pins">No bills pinned yet — click the pin icon on any bill card to track it here.</p></div>
+  </div>
+
+  <h2>News <span class="conf news">News report</span></h2>
+  <div id="newsList"><p class="empty-pins">Loading news…</p></div>
+
+  <h2>Legislation in motion</h2>
+  <div id="billsList"></div>
+
+  <h2>Vote record <span class="needs-research">Needs research</span></h2>
+  <div class="placeholder-card">Cantwell's floor vote history isn't yet pulled into this tracker. This would show how she voted on recent floor votes (not just what she sponsored).</div>
+
+  <h2>Co-sponsor network <span class="needs-research">Needs research</span></h2>
+  <div class="placeholder-card">Not yet built — would map which senators she partners with most often across sessions, to distinguish repeat bipartisan allies from one-off pairings.</div>
+
+  <h2>Committee attendance <span class="needs-research">Needs research</span></h2>
+  <div class="placeholder-card">Not yet built — would log which hearings/markups she attended and spoke at vs. missed, across Commerce, Finance, Energy & Natural Resources, and Indian Affairs.</div>
+
+  <h2>WA delegation comparison <span class="needs-research">Needs research</span></h2>
+  <div class="placeholder-card">Not yet built — would show where Cantwell and Sen. Murray align vs. diverge on WA-specific issues and votes.</div>
+
+  <h2>Washington state</h2>
+  <div class="wa-card" id="waCard">
+    <p class="title">Loading…</p>
+  </div>
+
+  <h2>Worth watching</h2>
+  <ul class="watch">
+    <li>Federal major-disaster declaration decision for WA wildfires</li>
+    <li>KOSA and Protect College Sports Act floor votes once the Senate returns from recess (Sept 14)</li>
+    <li>Hurricane Hunter Act floor timing</li>
+  </ul>
+
+  <footer>Cantwell Tracker · Hover any ticker to pause · Click any bill for details · Notes saved locally in your browser · Data refreshes automatically every 6 hours</footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="close" id="closeModal">&times;</button>
+    <h3 id="mTitle"></h3>
+    <p class="subtitle" id="mSubtitle"></p>
+    <div class="row"><span class="label">Status</span><span class="val" id="mStatus"></span></div>
+    <div class="row"><span class="label">Introduced</span><span class="val" id="mIntro"></span></div>
+    <div class="row"><span class="label">Sponsors / Cosponsors</span><span class="val" id="mSponsors"></span></div>
+    <div class="row"><span class="label">Committee</span><span class="val" id="mCommittee"></span></div>
+    <div class="row"><span class="label">What it does</span><span class="val" id="mDesc"></span></div>
+    <a class="link" id="mLink" href="#" target="_blank" rel="noopener">View official record on congress.gov →</a>
+  </div>
+</div>
+
+<script>
+// Static per-bill metadata. Stage/badge/progress are curated manually since
+// congress.gov's raw action text doesn't map cleanly to a discrete stage —
+// bump these when a tracked bill crosses committee/floor/signed.
+const bills = {
+  S1748: {
+    title: "S.1748 — Kids Online Safety Act", shortTitle: "S.1748 — Kids Online Safety Act (+3 companions)",
+    subtitle: "Plus 3 companion bills: Youth AI Privacy Act, Children's AI Toy Safety Act, CHAT Act",
+    sponsors: "Lead: Blackburn (R-TN) / Blumenthal (D-CT); Cantwell among cosponsors",
+    committee: "Senate Commerce, Science & Transportation",
+    desc: "Requires social media platforms to enable the strongest safety settings by default for minors, gives parents and kids tools to limit addictive design features, and creates a duty of care for platforms regarding harms to minors like bullying, exploitation, and content promoting self-harm.",
+    tags: ["Commerce", "Child Safety", "Tech"], bipartisan: true,
+    badge: "Passed committee", badgeClass: "pass", stage: 2,
+    tickerLabel: "KOSA", tickerSymbol: "▲ PASSED COMMITTEE", tickerClass: "up",
+    link: "https://www.congress.gov/bill/119th-congress/senate-bill/1748"
+  },
+  S4668: {
+    title: "S.4668 — Protect College Sports Act of 2026", shortTitle: "S.4668 — Protect College Sports Act",
+    subtitle: "",
+    sponsors: "Cantwell, Cruz (R-TX), Coons (D-DE), Schmitt (R-MO) — plus Capito (R-WV) and Welch (D-VT) added Jul 13",
+    committee: "Senate Commerce, Science & Transportation",
+    desc: "Creates national NIL (name, image, likeness) standards for college athletes, provides a limited NCAA antitrust exemption, protects funding for women's and Olympic sports programs, and amends the Sports Broadcasting Act to let schools pool media rights revenue.",
+    tags: ["Commerce", "Bipartisan", "College Sports"], bipartisan: true,
+    badge: "Awaiting floor vote", badgeClass: "wait", stage: 2,
+    tickerLabel: "COLLEGE SPORTS", tickerSymbol: "● AWAITING FLOOR VOTE", tickerClass: "mid",
+    link: "https://www.congress.gov/bill/119th-congress/senate-bill/4668"
+  },
+  S1514: {
+    title: "S.1514 — Quinault Indian Nation Land Transfer Act", shortTitle: "S.1514 — Quinault Indian Nation Land Transfer Act",
+    subtitle: "",
+    sponsors: "Cantwell (lead)",
+    committee: "Senate Committee on Indian Affairs",
+    desc: "Transfers approximately 72 acres of old-growth U.S. Forest Service land into trust for the Quinault Indian Nation. Gaming is expressly prohibited on the transferred land.",
+    tags: ["Indian Affairs", "WA Tribal Lands"], bipartisan: false,
+    badge: "Passed committee", badgeClass: "pass", stage: 2,
+    tickerLabel: "QUINAULT LAND TRANSFER", tickerSymbol: "▲ PASSED COMMITTEE", tickerClass: "up",
+    link: "https://www.congress.gov/bill/119th-congress/senate-bill/1514"
+  },
+  S4802: {
+    title: "S.4802 — Hurricane Hunter Aircraft Recapitalization Act", shortTitle: "S.4802 — Hurricane Hunter Aircraft Recapitalization Act",
+    subtitle: "",
+    sponsors: "Cantwell, Cruz (R-TX), Blunt Rochester (D-DE), Wicker (R-MS), Padilla (D-CA), Budd (R-NC)",
+    committee: "Senate Commerce, Science & Transportation",
+    desc: "Codifies NOAA's Hurricane Hunter aircraft mission into law and authorizes roughly $2.5 billion to acquire up to 9 new aircraft, replacing NOAA's aging fleet used for storm forecasting — including Pacific Northwest atmospheric-river events relevant to Washington state flooding.",
+    tags: ["Commerce", "NOAA / Weather", "Bipartisan"], bipartisan: true,
+    badge: "Ordered reported", badgeClass: "wait", stage: 2,
+    tickerLabel: "HURRICANE HUNTER", tickerSymbol: "● ORDERED REPORTED", tickerClass: "mid",
+    link: "https://www.congress.gov/bill/119th-congress/senate-bill/4802"
+  },
+  S5332: {
+    title: "S.5332 — Cooperative Institute Act of 2026", shortTitle: "S.5332 — Cooperative Institute Act of 2026",
+    subtitle: "",
+    sponsors: "Cantwell, Wicker (R-MS), Hickenlooper (D-CO), Hyde-Smith (R-MS)",
+    committee: "Senate Commerce, Science & Transportation",
+    desc: "Directs NOAA to formally maintain and fund its Cooperative Institute Program — university-based research partnerships that support NOAA's weather, climate, and ocean science work.",
+    tags: ["Commerce", "NOAA / Weather"], bipartisan: true,
+    badge: "Introduced", badgeClass: "bip", stage: 1,
+    tickerLabel: "COOPERATIVE INSTITUTE ACT", tickerSymbol: "◆ INTRODUCED", tickerClass: "new",
+    link: "https://www.congress.gov/bill/119th-congress/senate-bill/5332"
+  }
+};
+
+let feedData = null;
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function daysSince(iso) {
+  if (!iso) return null;
+  const then = new Date(iso);
+  if (isNaN(then)) return null;
+  return Math.floor((Date.now() - then.getTime()) / 86400000);
+}
+
+async function loadFeed() {
+  try {
+    const res = await fetch('./data/feed.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    feedData = await res.json();
+  } catch (err) {
+    console.error('Failed to load feed.json', err);
+    document.getElementById('errorBanner').innerHTML =
+      '<div class="fetch-error">⚠ Could not load live data feed — showing last known layout only. (' + esc(err.message) + ')</div>';
+    feedData = { bills: {}, news: [], wa: { active_alerts_count: 0, top_alerts: [], disaster_news: [] }, errors: [] };
+  }
+  render();
+}
+
+function render() {
+  const syncEl = document.getElementById('syncValue');
+  syncEl.textContent = feedData.generated_at ? `Live as of ${fmtDateTime(feedData.generated_at)}` : 'Unavailable';
+
+  if (feedData.errors && feedData.errors.length) {
+    document.getElementById('errorBanner').innerHTML =
+      '<div class="fetch-error">⚠ Some sources failed on the last refresh and are showing cached data: ' + esc(feedData.errors.join('; ')) + '</div>';
+  }
+
+  renderBills();
+  renderNews();
+  renderWa();
+  renderTickers();
+  renderStats();
+  attachBillClickHandlers();
+  updatePinButtons();
+  renderPinned();
+}
+
+function renderBills() {
+  const container = document.getElementById('billsList');
+  container.innerHTML = Object.keys(bills).map(id => {
+    const b = bills[id];
+    const live = (feedData.bills && feedData.bills[id]) || {};
+    const descText = live.latest_action_text
+      ? `${live.latest_action_text} (${fmtDate(live.latest_action_date)})`
+      : b.desc;
+    const cosponsors = live.cosponsors_count != null ? `${live.cosponsors_count} cosponsors` : null;
+    const ds = daysSince(live.latest_action_date);
+    const staleFlag = (ds != null && ds >= 7) ? `<span class="stale-flag">⚠ No movement in ${ds}+ days</span><br>` : '';
+    const searchable = `${b.title} ${b.tags.join(' ')} ${b.committee}`.toLowerCase();
+    const progressSteps = [0, 1, 2, 3].map(i =>
+      `<div class="progress-step ${i < b.stage ? 'done' : (i === b.stage ? 'current' : '')}"></div>`
+    ).join('');
+    return `
+    <div class="card ${b.bipartisan ? 'bipartisan' : ''}" data-searchable="${esc(searchable)}" data-bill="${id}">
+      <button class="pin-btn" data-pin="${id}">☆</button>
+      ${b.bipartisan ? '<span class="badge bip">Bipartisan</span>' : ''}
+      <div class="toprow" style="margin-top:${b.bipartisan ? '8px' : '0'}">
+        <p class="title" data-bill="${id}">${esc(b.shortTitle)}</p>
+        <span class="badge ${b.badgeClass}">${esc(b.badge)}</span>
+      </div>
+      <p class="desc">${esc(descText)}</p>
+      <div class="tags">
+        ${b.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}
+        ${cosponsors ? `<span class="tag">${esc(cosponsors)}</span>` : ''}
+        <span class="conf official">${live.fetched_ok === false ? 'Cached' : 'Live · congress.gov'}</span>
+      </div>
+      <div class="progress-track">${progressSteps}</div>
+      <div class="progress-labels"><span>Introduced</span><span>Committee</span><span>Floor</span><span>Signed</span></div>
+      ${staleFlag}
+      <button class="notes-toggle" data-notes-for="${id}">+ Add note</button>
+      <textarea class="notes-area" id="notes-${id}" placeholder="Your private notes on this bill (saved in this browser only)…"></textarea>
+    </div>`;
+  }).join('');
+
+  // Notes behavior (re-bind since cards are rebuilt)
+  container.querySelectorAll('.notes-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-notes-for');
+      document.getElementById('notes-' + id).classList.toggle('open');
+    });
+  });
+  container.querySelectorAll('.notes-area').forEach(area => {
+    const key = 'cantwell_note_' + area.id;
+    area.value = localStorage.getItem(key) || '';
+    area.addEventListener('input', () => localStorage.setItem(key, area.value));
+    area.addEventListener('click', (e) => e.stopPropagation());
+  });
+  container.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-pin');
+      let pins = loadPins();
+      if (pins.includes(id)) pins = pins.filter(p => p !== id);
+      else pins.push(id);
+      savePins(pins);
+      updatePinButtons();
+      renderPinned();
+    });
+  });
+  applySearchFilter();
+}
+
+function renderNews() {
+  const list = document.getElementById('newsList');
+  const items = (feedData.news || []).slice(0, 6);
+  if (!items.length) {
+    list.innerHTML = '<p class="empty-pins">No recent news items.</p>';
+    return;
+  }
+  list.innerHTML = items.map(n => `
+    <div class="card" style="cursor:default">
+      <a href="${esc(n.link)}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+        <p>${esc(n.title.replace(/ - [^-]+$/, ''))}</p>
+      </a>
+      <p class="meta">${esc(n.source || '')} — ${fmtDate(n.pubDate)}</p>
+    </div>`).join('');
+}
+
+function renderWa() {
+  const card = document.getElementById('waCard');
+  const wa = feedData.wa || {};
+  const topNews = (wa.disaster_news || [])[0];
+  const alertCount = wa.active_alerts_count || 0;
+  const titleText = topNews ? topNews.title.replace(/ - [^-]+$/, '') : 'No major WA disaster headlines right now';
+  const bodyLines = (wa.disaster_news || []).slice(1, 3).map(n =>
+    `<li><a href="${esc(n.link)}" target="_blank" rel="noopener" style="color:#e6c9c9">${esc(n.title.replace(/ - [^-]+$/, ''))}</a></li>`
+  ).join('');
+  const alertSummary = alertCount > 0
+    ? `${alertCount} active NWS alert${alertCount === 1 ? '' : 's'} in Washington` +
+      (wa.top_alerts && wa.top_alerts[0] ? ` — most recent: ${esc(wa.top_alerts[0].event)} (${esc(wa.top_alerts[0].areaDesc || '')})` : '')
+    : 'No active NWS alerts for Washington right now';
+  card.innerHTML = `
+    <p class="title">${esc(titleText)}</p>
+    <p class="body">${alertSummary}</p>
+    ${bodyLines ? `<ul class="alert-list">${bodyLines}</ul>` : ''}
+  `;
+}
+
+function renderTickers() {
+  const legItems = Object.keys(bills).map(id => {
+    const b = bills[id];
+    const live = (feedData.bills && feedData.bills[id]) || {};
+    const cosponsors = live.cosponsors_count != null ? `&nbsp;${live.cosponsors_count} cosponsors` : '';
+    return `<span class="ticker-item"><span class="bill-code" data-bill="${id}">${id.replace('S', 'S.')}</span> ${esc(b.tickerLabel)} &nbsp;<span class="${b.tickerClass}">${esc(b.tickerSymbol)}</span>${cosponsors} &nbsp;|&nbsp;</span>`;
+  }).join('');
+  document.getElementById('legTickerTrack').innerHTML = legItems + legItems.replace(/data-bill/g, 'aria-hidden="true" data-bill');
+
+  const wa = feedData.wa || {};
+  const headlines = (wa.disaster_news || []).slice(0, 3).map(n => n.title.replace(/ - [^-]+$/, ''));
+  const newsText = headlines.length
+    ? headlines.map(h => `🔴 ${esc(h)}`).join(' &nbsp;•&nbsp; ')
+    : '🟢 No breaking WA disaster headlines right now';
+  const newsItem = `<span class="ticker-item">${newsText} &nbsp;•&nbsp; </span>`;
+  document.getElementById('newsTickerTrack').innerHTML = newsItem + newsItem;
+}
+
+function renderStats() {
+  document.getElementById('statBillCount').textContent = Object.keys(bills).length;
+
+  let newest = null;
+  for (const id of Object.keys(bills)) {
+    const live = feedData.bills && feedData.bills[id];
+    if (live && live.introduced_date) {
+      if (!newest || live.introduced_date > newest.date) newest = { id, date: live.introduced_date };
+    }
+  }
+  document.getElementById('statNewestBill').textContent = newest ? newest.id.replace('S', 'S.') : '—';
+
+  const alertCount = (feedData.wa && feedData.wa.active_alerts_count) || 0;
+  document.getElementById('statWaStatus').textContent = alertCount > 0 ? `Active — ${alertCount} alert${alertCount === 1 ? '' : 's'}` : 'Clear';
+
+  const senateReturns = new Date('2026-09-14T00:00:00');
+  document.getElementById('statSenateStatus').textContent = Date.now() < senateReturns.getTime() ? 'In recess' : 'In session';
+}
+
+function openModal(id) {
+  const b = bills[id];
+  if (!b) return;
+  const live = (feedData.bills && feedData.bills[id]) || {};
+  document.getElementById('mTitle').textContent = b.title;
+  document.getElementById('mSubtitle').textContent = b.subtitle;
+  document.getElementById('mSubtitle').style.display = b.subtitle ? 'block' : 'none';
+  document.getElementById('mStatus').textContent = live.latest_action_text
+    ? `${live.latest_action_text} (${fmtDate(live.latest_action_date)})`
+    : b.desc;
+  document.getElementById('mIntro').textContent = fmtDate(live.introduced_date);
+  document.getElementById('mSponsors').textContent = b.sponsors + (live.cosponsors_count != null ? ` — ${live.cosponsors_count} cosponsors` : '');
+  document.getElementById('mCommittee').textContent = b.committee;
+  document.getElementById('mDesc').textContent = b.desc;
+  document.getElementById('mLink').href = b.link;
+  document.getElementById('overlay').classList.add('open');
+}
+function attachBillClickHandlers() {
+  document.querySelectorAll('[data-bill]').forEach(el => {
+    el.addEventListener('click', (e) => { e.stopPropagation(); openModal(el.getAttribute('data-bill')); });
+  });
+}
+document.getElementById('closeModal').addEventListener('click', () => document.getElementById('overlay').classList.remove('open'));
+document.getElementById('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') document.getElementById('overlay').classList.remove('open'); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open'); });
+
+// Search/filter
+function applySearchFilter() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  document.querySelectorAll('[data-searchable]').forEach(card => {
+    const match = card.getAttribute('data-searchable').toLowerCase().includes(q);
+    card.style.display = match ? '' : 'none';
+  });
+}
+document.getElementById('searchBox').addEventListener('input', applySearchFilter);
+
+// This week / full session toggle
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Recess countdown
+function updateCountdown() {
+  const target = new Date('2026-09-14T00:00:00');
+  const now = new Date();
+  const diff = target - now;
+  const el = document.getElementById('recessCountdown');
+  if (diff <= 0) { el.textContent = 'Senate is back in session'; return; }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  el.textContent = `${days}d ${hours}h`;
+}
+updateCountdown();
+setInterval(updateCountdown, 60000);
+
+// Pins (persisted via localStorage)
+function loadPins() {
+  try { return JSON.parse(localStorage.getItem('cantwell_pins') || '[]'); } catch(e) { return []; }
+}
+function savePins(pins) {
+  localStorage.setItem('cantwell_pins', JSON.stringify(pins));
+}
+function renderPinned() {
+  const pins = loadPins();
+  const list = document.getElementById('pinnedList');
+  if (pins.length === 0) {
+    list.innerHTML = '<p class="empty-pins">No bills pinned yet — click the pin icon on any bill card to track it here.</p>';
+    return;
+  }
+  list.innerHTML = pins.map(id => {
+    const b = bills[id];
+    if (!b) return '';
+    const live = (feedData.bills && feedData.bills[id]) || {};
+    return `<div class="card" data-bill="${id}" style="cursor:pointer"><p class="title" style="margin:0">${esc(b.title)}</p><p class="meta" style="margin-top:4px">${esc(live.latest_action_text || b.desc).split('.')[0]}.</p></div>`;
+  }).join('');
+  list.querySelectorAll('[data-bill]').forEach(el => {
+    el.addEventListener('click', () => openModal(el.getAttribute('data-bill')));
+  });
+}
+function updatePinButtons() {
+  const pins = loadPins();
+  document.querySelectorAll('.pin-btn').forEach(btn => {
+    const id = btn.getAttribute('data-pin');
+    btn.textContent = pins.includes(id) ? '★' : '☆';
+    btn.classList.toggle('pinned', pins.includes(id));
+  });
+}
+
+loadFeed();
+</script>
+</body>
+</html>
