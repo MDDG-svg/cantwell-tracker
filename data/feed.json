@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T03:24:14.665Z",
+  "generated_at": "2026-08-15T07:41:32.023Z",
   "bills": {
     "S1748": {
       "latest_action_text": "Committee on Commerce, Science, and Transportation. Ordered to be reported with an amendment in the nature of a substitute favorably.",
@@ -61,10 +61,10 @@
       "source": "NonStop Local KHQ"
     },
     {
-      "title": "User Clip: Senator Maria Cantwell - C-SPAN",
+      "title": "User Clip: Senator Maria Cantwell - c-span.org",
       "link": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQYzAxd0xaMnZ5amR4VWttakNDUGFqN0t2WDUwOHNtQVBuRDJOLU5EYlRSWC0xMGZKWkZ4dVUyZEZpTWlER3M2NnRCMmVkOEFHUXJoU0lEeEJyTklwZUFiTkxVeXVVX2pKTkdnaVdyQzZIX1g4X3ZxMVpiaG9zazVRR3RVS1Y?oc=5",
       "pubDate": "Mon, 10 Aug 2026 01:27:09 GMT",
-      "source": "C-SPAN"
+      "source": "c-span.org"
     },
     {
       "title": "New Bill: Senator Maria Cantwell introduces S. 5332: Cooperative Institute Act of 2026 - Quiver Quantitative",
@@ -98,8 +98,16 @@
     }
   ],
   "wa": {
-    "active_alerts_count": 12,
+    "active_alerts_count": 10,
     "top_alerts": [
+      {
+        "event": "Red Flag Warning",
+        "headline": "Red Flag Warning issued August 14 at 9:56PM PDT until August 15 at 9:00PM PDT by NWS Pendleton OR",
+        "areaDesc": "Northern Blue Mountains of Oregon; Canyon Grassland of Wallowa County; Grande Ronde Valley of Oregon; Eagle Cap Wilderness; Western Forested Blue Mountains; Blue Mountains of Washington; Southeast Washington Grande Ronde Valley",
+        "severity": "Severe",
+        "effective": "2026-08-14T21:56:00-07:00",
+        "expires": "2026-08-15T07:00:00-07:00"
+      },
       {
         "event": "Red Flag Warning",
         "headline": "Red Flag Warning issued August 14 at 7:52PM PDT until August 15 at 9:00PM PDT by NWS Spokane WA",
@@ -109,36 +117,28 @@
         "expires": "2026-08-15T12:00:00-07:00"
       },
       {
-        "event": "Red Flag Warning",
-        "headline": "Red Flag Warning issued August 14 at 6:46PM PDT until August 14 at 9:00PM PDT by NWS Pendleton OR",
-        "areaDesc": "East Washington South Central Cascade Mountains",
-        "severity": "Severe",
-        "effective": "2026-08-14T18:46:00-07:00",
-        "expires": "2026-08-14T21:00:00-07:00"
-      },
-      {
-        "event": "Red Flag Warning",
-        "headline": "Red Flag Warning issued August 14 at 6:46PM PDT until August 15 at 9:00PM PDT by NWS Pendleton OR",
-        "areaDesc": "Northern Blue Mountains of Oregon; Canyon Grassland of Wallowa County; Blue Mountains of Washington; Southeast Washington Grande Ronde Valley",
-        "severity": "Severe",
-        "effective": "2026-08-14T18:46:00-07:00",
-        "expires": "2026-08-14T21:00:00-07:00"
-      },
-      {
-        "event": "Red Flag Warning",
-        "headline": "Red Flag Warning issued August 14 at 1:24PM PDT until August 14 at 9:00PM PDT by NWS Seattle WA",
-        "areaDesc": "West Portion of the Olympic Mountains; West Slopes of the North Cascades Generally above 1500 Feet; West Slopes of the Central Cascades Generally above 1500 Feet; East Portion of the Olympic Mountains",
-        "severity": "Severe",
-        "effective": "2026-08-14T13:24:00-07:00",
-        "expires": "2026-08-14T21:00:00-07:00"
-      },
-      {
         "event": "Air Quality Alert",
         "headline": "Air Quality Alert issued August 14 at 11:47AM PDT by NWS Pendleton OR",
         "areaDesc": "Yakima, WA",
         "severity": "Unknown",
         "effective": "2026-08-14T11:47:00-07:00",
         "expires": "2026-08-15T12:00:00-07:00"
+      },
+      {
+        "event": "Air Quality Alert",
+        "headline": "Air Quality Alert issued August 14 at 11:47AM PDT by NWS Pendleton OR",
+        "areaDesc": "Kittitas, WA",
+        "severity": "Unknown",
+        "effective": "2026-08-14T11:47:00-07:00",
+        "expires": "2026-08-15T12:00:00-07:00"
+      },
+      {
+        "event": "Air Quality Alert",
+        "headline": "Air Quality Alert issued August 14 at 11:08AM PDT by NWS Spokane WA",
+        "areaDesc": "Asotin, WA; Ferry, WA; Garfield, WA; Grant, WA; Stevens, WA",
+        "severity": "Unknown",
+        "effective": "2026-08-14T11:08:00-07:00",
+        "expires": "2026-08-15T11:15:00-07:00"
       }
     ],
     "disaster_news": [
