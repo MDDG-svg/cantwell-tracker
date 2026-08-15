@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T03:20:51.750Z",
+  "generated_at": "2026-08-15T03:24:14.665Z",
   "bills": {
     "S1748": {
       "latest_action_text": "Committee on Commerce, Science, and Transportation. Ordered to be reported with an amendment in the nature of a substitute favorably.",
@@ -7,16 +7,16 @@
       "cosponsors_count": 76,
       "introduced_date": "2025-05-14",
       "updated_date": "2026-08-06T11:03:33Z",
-      "source": "congress.gov",
+      "source": "govtrack",
       "fetched_ok": true
     },
     "S4668": {
-      "latest_action_text": "Cloture motion on the motion to proceed to the measure presented in Senate. (CR S4449)",
-      "latest_action_date": "2026-08-05",
+      "latest_action_text": "Committee on Commerce, Science, and Transportation. Ordered to be reported with an amendment in the nature of a substitute favorably.",
+      "latest_action_date": "2026-06-18",
       "cosponsors_count": 7,
       "introduced_date": "2026-06-02",
       "updated_date": "2026-08-10T17:21:28Z",
-      "source": "congress.gov",
+      "source": "govtrack",
       "fetched_ok": true
     },
     "S1514": {
@@ -25,7 +25,7 @@
       "cosponsors_count": 1,
       "introduced_date": "2025-04-29",
       "updated_date": "2026-08-06T11:03:33Z",
-      "source": "congress.gov",
+      "source": "govtrack",
       "fetched_ok": true
     },
     "S4802": {
@@ -34,16 +34,16 @@
       "cosponsors_count": 5,
       "introduced_date": "2026-06-17",
       "updated_date": "2026-07-23T11:03:19Z",
-      "source": "congress.gov",
+      "source": "govtrack",
       "fetched_ok": true
     },
     "S5332": {
-      "latest_action_text": "Read twice and referred to the Committee on Commerce, Science, and Transportation.",
+      "latest_action_text": "This bill is in the first stage of the legislative process. It was introduced into Congress on August 6, 2026. It will typically be considered by committee next before it is possibly sent on to the House or Senate as a whole.",
       "latest_action_date": "2026-08-06",
       "cosponsors_count": 3,
       "introduced_date": "2026-08-06",
       "updated_date": "2026-08-12T06:03:36Z",
-      "source": "congress.gov",
+      "source": "govtrack",
       "fetched_ok": true
     }
   },
