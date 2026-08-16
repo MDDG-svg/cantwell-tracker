@@ -3,6 +3,7 @@ import path from "node:path";
 import { fetchSenators } from "./fetch-senators.mjs";
 import { fetchSenatorBills } from "./fetch-senator-bills.mjs";
 import { fetchSenatorNews } from "./fetch-senator-news.mjs";
+import { fetchSenatorVotes } from "./fetch-senator-votes.mjs";
 import { fetchStateAlerts } from "./fetch-state-alerts.mjs";
 import { US_STATES } from "./us-states.mjs";
 import { runPool } from "./pool.mjs";
@@ -17,6 +18,15 @@ async function loadPrevious() {
   } catch {
     return null;
   }
+}
+
+// Falls back to the previous run's value for this source on failure, so a
+// transient upstream outage doesn't blank out that section of the dashboard.
+function resolveWithFallback(result, prevValue, errors, label, emptyShape) {
+  if (result.fetched_ok) return result;
+  if (prevValue?.fetched_ok) errors.push(`${label}: ${result.error} (kept previous)`);
+  else errors.push(`${label}: ${result.error}`);
+  return prevValue ?? { fetched_ok: false, error: result.error, ...emptyShape };
 }
 
 async function main() {
@@ -36,33 +46,22 @@ async function main() {
     console.log(`TEST_LIMIT set — using ${roster.length} senators: ${roster.map(s => s.fullName).join(", ")}`);
   }
 
-  console.log(`Fetching bills + news for ${roster.length} senators (concurrency ${SENATOR_CONCURRENCY})...`);
+  console.log(`Fetching bills + news + votes for ${roster.length} senators (concurrency ${SENATOR_CONCURRENCY})...`);
   const senatorData = {};
   await runPool(roster, SENATOR_CONCURRENCY, async (s) => {
     const prev = previous?.senator_data?.[s.govtrackId];
 
-    const [billsResult, newsResult] = await Promise.all([
+    const [billsResult, newsResult, votesResult] = await Promise.all([
       fetchSenatorBills(s.govtrackId).catch(err => ({ fetched_ok: false, error: err.message })),
-      fetchSenatorNews(s.fullName, 4).catch(err => ({ fetched_ok: false, error: err.message }))
+      fetchSenatorNews(s.fullName, 4).catch(err => ({ fetched_ok: false, error: err.message })),
+      fetchSenatorVotes(s.govtrackId, 20).catch(err => ({ fetched_ok: false, error: err.message }))
     ]);
 
-    let bills;
-    if (billsResult.fetched_ok) {
-      bills = billsResult;
-    } else {
-      errors.push(`senator.${s.govtrackId}.bills (${s.fullName}): ${billsResult.error}${prev?.bills?.fetched_ok ? " (kept previous)" : ""}`);
-      bills = prev?.bills ?? { fetched_ok: false, error: billsResult.error, bills: [], total_sponsored: 0 };
-    }
-
-    let news;
-    if (newsResult.fetched_ok) {
-      news = newsResult;
-    } else {
-      errors.push(`senator.${s.govtrackId}.news (${s.fullName}): ${newsResult.error}${prev?.news?.fetched_ok ? " (kept previous)" : ""}`);
-      news = prev?.news ?? { fetched_ok: false, error: newsResult.error, items: [] };
-    }
-
-    senatorData[s.govtrackId] = { bills, news };
+    senatorData[s.govtrackId] = {
+      bills: resolveWithFallback(billsResult, prev?.bills, errors, `senator.${s.govtrackId}.bills (${s.fullName})`, { bills: [], total_sponsored: 0 }),
+      news: resolveWithFallback(newsResult, prev?.news, errors, `senator.${s.govtrackId}.news (${s.fullName})`, { items: [] }),
+      votes: resolveWithFallback(votesResult, prev?.votes, errors, `senator.${s.govtrackId}.votes (${s.fullName})`, { votes: [] })
+    };
   });
 
   console.log(`Fetching state alerts for ${US_STATES.length} states (concurrency ${STATE_CONCURRENCY})...`);

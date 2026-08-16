@@ -118,6 +118,10 @@
   .badge.bip { background: #16253d; color: #6ea8fe; }
   .badge.pass { background: #123222; color: #3ddc84; }
   .badge.wait { background: #3a2f10; color: #f2b705; }
+  .badge.yea { background: #123222; color: #3ddc84; }
+  .badge.nay { background: #3a1414; color: #ff8f8f; }
+  .badge.other-vote { background: #2a2410; color: #f2b705; }
+  .vote-outcome { font-size: 11px; color: #565d6b; margin-left: 6px; }
   .card .desc { margin-top: 8px; font-size: 13px; color: #cfd4dc; }
 
   .tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
@@ -244,8 +248,8 @@
   <h2 id="billsHeading">Legislation in motion</h2>
   <div id="billsList"></div>
 
-  <h2 id="voteHeading">Vote record <span class="needs-research">Needs research</span></h2>
-  <div class="placeholder-card" id="votePlaceholder"></div>
+  <h2 id="voteHeading">Vote record</h2>
+  <div id="votesList"></div>
 
   <h2 id="cosponsorHeading">Co-sponsor network <span class="needs-research">Needs research</span></h2>
   <div class="placeholder-card" id="cosponsorPlaceholder"></div>
@@ -344,7 +348,7 @@ function senatorById(id) {
   return feedData.senators.find(s => String(s.govtrackId) === String(id));
 }
 function dataFor(id) {
-  return feedData.senator_data[id] || { bills: { bills: [], total_sponsored: 0 }, news: { items: [] } };
+  return feedData.senator_data[id] || { bills: { bills: [], total_sponsored: 0 }, news: { items: [] }, votes: { votes: [] } };
 }
 
 async function loadFeed() {
@@ -453,6 +457,7 @@ function render() {
 
   renderHeader(s);
   renderBills(s, d);
+  renderVotes(s, d);
   renderNews(s, d);
   renderState(s);
   renderTickers(s, d);
@@ -547,6 +552,36 @@ function openBillModalData(bill, s) {
   document.getElementById('overlay').classList.add('open');
 }
 
+function renderVotes(s, d) {
+  document.getElementById('voteHeading').innerHTML = `Vote record for ${esc(s.fullName)}`;
+  const list = document.getElementById('votesList');
+  const votes = d.votes?.votes || [];
+  if (!votes.length) {
+    list.innerHTML = '<p class="empty-pins">No recent floor votes found.</p>';
+    return;
+  }
+  list.innerHTML = `<p class="empty-pins" style="margin-bottom:10px">Most recent ${votes.length} floor votes cast, not just bills sponsored/cosponsored.</p>` +
+    votes.map(v => {
+      const posClass = v.position === 'Yea' ? 'yea' : (v.position === 'Nay' ? 'nay' : 'other-vote');
+      const outcomeNote = v.votedWithOutcome === true ? 'Voted with the outcome'
+        : v.votedWithOutcome === false ? 'Voted against the outcome' : '';
+      return `
+      <div class="card" style="cursor:default">
+        <div class="toprow">
+          <p class="title" style="cursor:default">${esc(v.question || 'Untitled vote')}</p>
+          <span class="badge ${posClass}">${esc(v.position || '—')}</span>
+        </div>
+        <p class="desc">${esc(v.result || '')}${outcomeNote ? `<span class="vote-outcome">${esc(outcomeNote)}</span>` : ''}</p>
+        <div class="tags">
+          <span class="tag">${esc(v.category || '')}</span>
+          <span class="tag">${esc(v.chamber || '')}</span>
+          <span class="tag">${fmtDate(v.date)}</span>
+          ${v.link ? `<a href="${esc(v.link)}" target="_blank" rel="noopener" class="conf official" style="text-decoration:none">Live · GovTrack</a>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+}
+
 function renderNews(s, d) {
   document.getElementById('newsHeading').innerHTML = `News about ${esc(s.fullName)} <span class="conf news">News report</span>`;
   const list = document.getElementById('newsList');
@@ -619,8 +654,6 @@ function renderStats(s, d) {
 }
 
 function renderPlaceholders(s) {
-  document.getElementById('voteHeading').innerHTML = `Vote record <span class="needs-research">Needs research</span>`;
-  document.getElementById('votePlaceholder').textContent = `${s.fullName}'s floor vote history isn't yet pulled into this tracker. This would show how they voted on recent floor votes (not just what they sponsored).`;
   document.getElementById('cosponsorHeading').innerHTML = `Co-sponsor network <span class="needs-research">Needs research</span>`;
   document.getElementById('cosponsorPlaceholder').textContent = `Not yet built — would map which senators ${s.lastName} partners with most often across sessions, to distinguish repeat allies from one-off pairings.`;
   document.getElementById('committeeHeading').innerHTML = `Committee attendance <span class="needs-research">Needs research</span>`;

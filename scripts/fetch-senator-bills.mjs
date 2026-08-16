@@ -1,4 +1,5 @@
-const UA = { "User-Agent": "cantwell-tracker (personal dashboard, github.com)" };
+import { govtrackFetch } from "./govtrack-fetch.mjs";
+
 const CONGRESS_NUM = 119;
 
 // Cosponsored bills where the senator hasn't taken any real legislative
@@ -22,9 +23,7 @@ function mapBill(b) {
 }
 
 async function fetchBillList(url) {
-  const res = await fetch(url, { headers: UA });
-  if (!res.ok) throw new Error(`govtrack bill API error ${res.status}`);
-  const data = await res.json();
+  const data = await govtrackFetch(url);
   return { total: data.meta?.total_count ?? data.objects.length, objects: data.objects };
 }
 
