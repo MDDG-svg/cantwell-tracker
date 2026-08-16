@@ -46,6 +46,16 @@
     border-radius: 8px; padding: 9px 12px; color: #e6e8eb; font-size: 13px;
   }
   .senator-search:focus { outline: none; border-color: #6ea8fe; }
+  .state-browse {
+    margin-top: 12px; max-height: 280px; overflow-y: auto;
+    border-top: 1px solid #262b36; padding-top: 10px;
+  }
+  .state-group { margin-bottom: 10px; }
+  .state-group .state-label {
+    font-size: 10.5px; color: #565d6b; text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 5px; display: block;
+  }
+  .state-group .row { gap: 6px; }
 
   .toolbar { display: flex; gap: 10px; margin: 16px 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
   .print-btn {
@@ -70,7 +80,10 @@
   .ticker-wrap:hover .ticker-track { animation-play-state: paused; }
   .ticker-item { padding: 0 24px; font-size: 12px; font-family: "SF Mono", Menlo, monospace; }
   .leg .ticker-item { color: #cfd4dc; }
-  .news .ticker-item { color: #9db4d1; font-weight: 600; }
+  .leg .ticker-item.ticker-bill { cursor: pointer; }
+  .leg .ticker-item.ticker-bill:hover { text-decoration: underline; }
+  .news .ticker-item { color: #9db4d1; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .news a.ticker-item:hover { text-decoration: underline; }
   .up { color: #3ddc84; } .mid { color: #f2b705; } .new { color: #6ea8fe; }
 
   .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin: 18px 0 22px; }
@@ -190,9 +203,9 @@
       <span class="label">Your state</span>
     </div>
     <div class="row" style="margin-top:10px">
-      <input class="senator-search" id="senatorSearch" list="senatorList" placeholder="Jump to any senator — search by name or state…">
-      <datalist id="senatorList"></datalist>
+      <input class="senator-search" id="senatorFilter" placeholder="Filter the list below by name or state…">
     </div>
+    <div class="state-browse" id="stateBrowse"></div>
   </div>
 
   <div class="countdown">
@@ -292,6 +305,20 @@ function mapStatus(code, fallbackLabel) {
   return STATUS_MAP[code] || { stage: 0, badge: fallbackLabel || "In progress", badgeClass: "wait" };
 }
 
+// Mirrors scripts/state-names.mjs — keep in sync (static site, no shared build step).
+const STATE_NAMES = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
+  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
+  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
+  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
+  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
+  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
+  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
+  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming"
+};
+
 const HOME_STATE = "WA";
 let feedData = null;
 let selectedId = null; // govtrackId (string)
@@ -342,15 +369,14 @@ function init() {
   }
 
   buildHomeStateRow();
-  buildSenatorDatalist();
-  document.getElementById('senatorSearch').addEventListener('change', onSearchSelect);
-  document.getElementById('senatorSearch').addEventListener('input', onSearchTyping);
+  buildStateBrowse();
+  document.getElementById('senatorFilter').addEventListener('input', onFilterInput);
 
   const params = new URLSearchParams(location.search);
   const fromUrl = params.get('senator');
   let initial = fromUrl && senatorById(fromUrl) ? fromUrl : null;
   if (!initial) {
-    const homeSens = feedData.senators.filter(s => s.state === HOME_STATE);
+    const homeSens = feedData.senators.filter(s => s.state === HOME_STATE).sort((a, b) => a.lastName.localeCompare(b.lastName));
     initial = homeSens[0]?.govtrackId ?? feedData.senators[0]?.govtrackId ?? null;
   }
   if (initial) selectSenator(initial, { pushUrl: false });
@@ -364,7 +390,7 @@ function init() {
 
 function buildHomeStateRow() {
   const row = document.getElementById('homeStateRow');
-  const homeSens = feedData.senators.filter(s => s.state === HOME_STATE);
+  const homeSens = feedData.senators.filter(s => s.state === HOME_STATE).sort((a, b) => a.lastName.localeCompare(b.lastName));
   homeSens.forEach(s => {
     const btn = document.createElement('button');
     btn.className = 'chip';
@@ -375,28 +401,43 @@ function buildHomeStateRow() {
   });
 }
 
-function buildSenatorDatalist() {
-  const list = document.getElementById('senatorList');
-  list.innerHTML = feedData.senators
-    .slice()
-    .sort((a, b) => a.lastName.localeCompare(b.lastName))
-    .map(s => `<option value="${esc(s.lastName + ', ' + s.firstName + ' (' + s.party[0] + '-' + s.state + ')')}" data-id="${s.govtrackId}"></option>`)
-    .join('');
+function buildStateBrowse() {
+  const container = document.getElementById('stateBrowse');
+  const byState = {};
+  feedData.senators.forEach(s => { (byState[s.state] = byState[s.state] || []).push(s); });
+  const states = Object.keys(byState).sort();
+  container.innerHTML = states.map(state => {
+    const sens = byState[state].slice().sort((a, b) => a.lastName.localeCompare(b.lastName));
+    const stateName = STATE_NAMES[state] || state;
+    const chips = sens.map(s =>
+      `<button class="chip" data-govtrack-id="${esc(s.govtrackId)}" data-search="${esc((s.fullName + ' ' + s.state + ' ' + stateName + ' ' + s.party).toLowerCase())}">${esc(s.fullName)} (${esc(s.party[0])}-${esc(s.state)})</button>`
+    ).join('');
+    return `<div class="state-group" data-state-search="${esc((state + ' ' + stateName).toLowerCase())}"><span class="state-label">${esc(stateName)} (${esc(state)})</span><div class="row">${chips}</div></div>`;
+  }).join('');
+  container.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => selectSenator(btn.dataset.govtrackId));
+  });
 }
 
-function onSearchTyping(e) {
-  const val = e.target.value.trim();
-  const opt = Array.from(document.getElementById('senatorList').options).find(o => o.value === val);
-  if (opt) selectSenator(opt.dataset.id);
+function onFilterInput(e) {
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#stateBrowse .state-group').forEach(group => {
+    const stateMatch = !q || group.dataset.stateSearch.includes(q);
+    let anyVisible = false;
+    group.querySelectorAll('.chip').forEach(chip => {
+      const match = stateMatch || chip.dataset.search.includes(q);
+      chip.style.display = match ? '' : 'none';
+      if (match) anyVisible = true;
+    });
+    group.style.display = anyVisible ? '' : 'none';
+  });
 }
-function onSearchSelect(e) { onSearchTyping(e); }
 
 function selectSenator(govtrackId, opts = {}) {
   const s = senatorById(govtrackId);
   if (!s) return;
   selectedId = String(govtrackId);
-  document.querySelectorAll('#homeStateRow .chip').forEach(c => c.classList.toggle('active', c.dataset.govtrackId === selectedId));
-  document.getElementById('senatorSearch').value = '';
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.govtrackId === selectedId));
   if (opts.pushUrl !== false) {
     const url = new URL(location.href);
     url.searchParams.set('senator', selectedId);
@@ -466,7 +507,9 @@ function renderBills(s, d) {
     }).join('');
 
   container.querySelectorAll('[data-billlink]').forEach(el => {
-    el.addEventListener('click', () => openBillModal(el.closest('.card'), s));
+    const key = el.closest('.card').getAttribute('data-billkey');
+    const bill = bills.find(b => billKey(s.govtrackId, b.displayNumber) === key);
+    el.addEventListener('click', () => openBillModalData(bill, s));
   });
   container.querySelectorAll('.notes-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -492,16 +535,15 @@ function renderBills(s, d) {
   });
 }
 
-function openBillModal(cardEl, s) {
-  const link = cardEl.querySelector('[data-billlink]').dataset.billlink;
-  const title = cardEl.querySelector('.title').textContent;
-  const desc = cardEl.querySelector('.desc').textContent;
-  document.getElementById('mTitle').textContent = title;
+function openBillModalData(bill, s) {
+  if (!bill) return;
+  const st = mapStatus(bill.statusCode, bill.statusLabel);
+  document.getElementById('mTitle').textContent = `${bill.displayNumber} — ${bill.title}`;
   document.getElementById('mSubtitle').style.display = 'none';
-  document.getElementById('mStatus').textContent = desc;
-  document.getElementById('mIntro').textContent = cardEl.querySelector('.tag').textContent.replace('Introduced ', '');
-  document.getElementById('mSponsors').textContent = `${s.fullName} (${s.party}-${s.state})`;
-  document.getElementById('mLink').href = link;
+  document.getElementById('mStatus').textContent = `${bill.statusDescription || st.badge} (${fmtDate(bill.currentStatusDate)})`;
+  document.getElementById('mIntro').textContent = fmtDate(bill.introducedDate);
+  document.getElementById('mSponsors').textContent = `${s.fullName} (${s.party}-${s.state}) — ${bill.role === 'sponsor' ? 'Sponsor' : 'Cosponsor'}`;
+  document.getElementById('mLink').href = bill.link;
   document.getElementById('overlay').classList.add('open');
 }
 
@@ -544,21 +586,25 @@ function renderState(s) {
 
 function renderTickers(s, d) {
   const bills = d.bills.bills || [];
-  const legItems = bills.map(b => {
+  const legItemHtml = bills.map((b, i) => {
     const st = mapStatus(b.statusCode, b.statusLabel);
     const cls = st.stage >= 3 ? 'up' : (st.stage >= 1 ? 'mid' : 'new');
     const symbol = st.stage >= 3 ? '▲' : (st.stage >= 1 ? '●' : '◆');
-    return `<span class="ticker-item">${esc(b.displayNumber)} &nbsp;<span class="${cls}">${symbol} ${esc(st.badge.toUpperCase())}</span> &nbsp;|&nbsp;</span>`;
+    return `<span class="ticker-item ticker-bill" data-bill-idx="${i}">${esc(b.displayNumber)} &nbsp;<span class="${cls}">${symbol} ${esc(st.badge.toUpperCase())}</span> &nbsp;|&nbsp;</span>`;
   }).join('');
-  const legTrack = legItems || '<span class="ticker-item">No recent bills</span>';
+  const legTrack = legItemHtml || '<span class="ticker-item">No recent bills</span>';
   document.getElementById('legTickerTrack').innerHTML = legTrack + legTrack;
+  document.querySelectorAll('#legTickerTrack .ticker-bill').forEach(el => {
+    const bill = bills[Number(el.dataset.billIdx)];
+    if (bill) el.addEventListener('click', () => openBillModalData(bill, s));
+  });
 
-  const newsItems = (d.news.items || []).slice(0, 4).map(n => n.title.replace(/ - [^-]+$/, ''));
-  const newsText = newsItems.length
-    ? newsItems.map(h => `📰 ${esc(h)}`).join(' &nbsp;•&nbsp; ')
-    : 'No recent headlines';
-  const newsItem = `<span class="ticker-item">${newsText} &nbsp;•&nbsp; </span>`;
-  document.getElementById('newsTickerTrack').innerHTML = newsItem + newsItem;
+  const newsList = (d.news.items || []).slice(0, 4);
+  const newsItemHtml = newsList.map(n =>
+    `<a class="ticker-item" href="${esc(n.link)}" target="_blank" rel="noopener">📰 ${esc(n.title.replace(/ - [^-]+$/, ''))} &nbsp;•&nbsp;</a>`
+  ).join('');
+  const newsTrack = newsItemHtml || '<span class="ticker-item">No recent headlines</span>';
+  document.getElementById('newsTickerTrack').innerHTML = newsTrack + newsTrack;
 }
 
 function renderStats(s, d) {
