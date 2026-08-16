@@ -109,6 +109,8 @@
 
   .tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .tag { font-size: 10.5px; background: #1e222c; color: #8b93a1; padding: 2px 8px; border-radius: 5px; }
+  .tag.role-sponsor { background: #16253d; color: #6ea8fe; font-weight: 700; }
+  .tag.role-cosponsor { background: #241e36; color: #b78bf0; font-weight: 700; }
   .conf { font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: 700; text-transform: uppercase; }
   .conf.official { background: #123222; color: #3ddc84; }
   .conf.news { background: #16253d; color: #6ea8fe; }
@@ -427,19 +429,26 @@ function billKey(govtrackId, displayNumber) { return `${govtrackId}::${displayNu
 
 function renderBills(s, d) {
   const container = document.getElementById('billsList');
-  document.getElementById('billsHeading').innerHTML = `Legislation sponsored by ${esc(s.fullName)}`;
+  document.getElementById('billsHeading').innerHTML = `Legislation involving ${esc(s.fullName)}`;
   const bills = d.bills.bills || [];
   if (!bills.length) {
-    container.innerHTML = '<p class="empty-pins">No recent sponsored legislation found.</p>';
+    container.innerHTML = '<p class="empty-pins">No recent legislative activity found.</p>';
     return;
   }
-  container.innerHTML = `<p class="empty-pins" style="margin-bottom:10px">Showing ${bills.length} most recently active of ${d.bills.total_sponsored || bills.length} bills sponsored this Congress.</p>` +
+  const sponsoredCount = bills.filter(b => b.role === 'sponsor').length;
+  const cosponsoredCount = bills.filter(b => b.role === 'cosponsor').length;
+  const summary = `Showing ${sponsoredCount} most recently active of ${d.bills.total_sponsored ?? sponsoredCount} bills sponsored, `
+    + `plus ${cosponsoredCount} notable cosponsored bill${cosponsoredCount === 1 ? '' : 's'} with real committee/floor movement, this Congress.`;
+  container.innerHTML = `<p class="empty-pins" style="margin-bottom:10px">${summary}</p>` +
     bills.map(b => {
       const st = mapStatus(b.statusCode, b.statusLabel);
       const key = billKey(s.govtrackId, b.displayNumber);
       const progressSteps = [0, 1, 2, 3].map(i =>
         `<div class="progress-step ${i < st.stage ? 'done' : (i === st.stage ? 'current' : '')}"></div>`
       ).join('');
+      const roleTag = b.role === 'sponsor'
+        ? '<span class="tag role-sponsor">Sponsor</span>'
+        : '<span class="tag role-cosponsor">Cosponsor</span>';
       return `
       <div class="card" data-billkey="${esc(key)}">
         <button class="pin-btn" data-pin="${esc(key)}">☆</button>
@@ -448,7 +457,7 @@ function renderBills(s, d) {
           <span class="badge ${st.badgeClass}">${esc(st.badge)}</span>
         </div>
         <p class="desc">${esc(b.statusDescription || st.badge)} (${fmtDate(b.currentStatusDate)})</p>
-        <div class="tags"><span class="tag">Introduced ${fmtDate(b.introducedDate)}</span><span class="conf official">Live · GovTrack</span></div>
+        <div class="tags">${roleTag}<span class="tag">Introduced ${fmtDate(b.introducedDate)}</span><span class="conf official">Live · GovTrack</span></div>
         <div class="progress-track">${progressSteps}</div>
         <div class="progress-labels"><span>Introduced</span><span>Committee</span><span>Floor</span><span>Signed</span></div>
         <button class="notes-toggle" data-notes-for="${esc(key)}">+ Add note</button>

@@ -42,7 +42,7 @@ async function main() {
     const prev = previous?.senator_data?.[s.govtrackId];
 
     const [billsResult, newsResult] = await Promise.all([
-      fetchSenatorBills(s.govtrackId, 5).catch(err => ({ fetched_ok: false, error: err.message })),
+      fetchSenatorBills(s.govtrackId).catch(err => ({ fetched_ok: false, error: err.message })),
       fetchSenatorNews(s.fullName, 4).catch(err => ({ fetched_ok: false, error: err.message }))
     ]);
 
